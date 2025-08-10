@@ -1,0 +1,23 @@
+# templates/grafana-route.yaml
+# This template creates an OpenShift Route to expose the Grafana service externally.
+# If you are using a standard Kubernetes cluster, you would create an Ingress object instead.
+
+{{- if .Values.grafana.route.enabled }}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ include "grafana-postgres.fullname" . }}
+  labels:
+    {{- include "grafana-postgres.labels" . | nindent 4 }}
+spec:
+  host: {{ .Values.grafana.route.host }}
+  to:
+    kind: Service
+    name: {{ include "grafana-postgres.fullname" . }}
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+{{- end }}

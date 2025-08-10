@@ -1,0 +1,46 @@
+# values.yaml
+# This file contains the default configuration values for the chart.
+# You can override these values when you install the chart.
+
+# --- Grafana Configuration ---
+grafana:
+  # The Docker image and tag for Grafana.
+  image:
+    repository: grafana/grafana
+    tag: "10.4.2"
+    pullPolicy: IfNotPresent
+
+  # Default admin credentials for Grafana.
+  # IMPORTANT: You should change the password in a production environment.
+  adminUser: admin
+  adminPassword: "change-this-password"
+
+  # Service configuration to expose Grafana within the cluster.
+  service:
+    type: ClusterIP
+    port: 3000
+
+  # Route (for OpenShift) or Ingress configuration to expose Grafana externally.
+  # If you are not on OpenShift, you would typically replace this with an 'ingress' section.
+  route:
+    enabled: true
+    # The hostname for the Grafana route. Change this to your desired domain.
+    host: grafana.example.com
+
+# --- PostgreSQL Configuration ---
+# These values will override the defaults of the PostgreSQL sub-chart.
+# This ensures Grafana can connect to the database.
+postgresql:
+  # We are using the Bitnami PostgreSQL chart, so we configure its 'auth' section.
+  auth:
+    # The username and database name Grafana will use.
+    username: grafana
+    database: grafana
+    # The password for the PostgreSQL user.
+    # IMPORTANT: Change this in a production environment.
+    password: "change-this-pg-password"
+
+  # Disable persistence for this example. For production, you should enable it.
+  primary:
+    persistence:
+      enabled: false

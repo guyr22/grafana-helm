@@ -1,0 +1,42 @@
+# templates/grafana-deployment.yaml
+# This template creates the Kubernetes Deployment for the Grafana instance.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "grafana-postgres.fullname" . }}
+  labels:
+    {{- include "grafana-postgres.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "grafana-postgres.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "grafana-postgres.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: grafana
+          image: "{{ .Values.grafana.image.repository }}:{{ .Values.grafana.image.tag }}"
+          imagePullPolicy: {{ .Values.grafana.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          env:
+            # Setting the admin user and password from values.yaml
+            - name: GF_SECURITY_ADMIN_USER
+              value: {{ .Values.grafana.adminUser | quote }}
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              value: {{ .Values.grafana.adminPassword | quote }}
+          volumeMounts:
+            - name: grafana-datasources
+              # This mount path is where Grafana looks for provisioning files.
+              mountPath: /etc/grafana/provisioning/datasources
+      volumes:
+        - name: grafana-datasources
+          configMap:
+            # Mounting the ConfigMap we created earlier.
+            name: {{ include "grafana-postgres.fullname" . }}-datasources

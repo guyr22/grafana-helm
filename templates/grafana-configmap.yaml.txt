@@ -1,0 +1,33 @@
+# templates/grafana-configmap.yaml
+# This template creates a ConfigMap containing the datasource configuration.
+# Grafana's provisioning system will automatically detect this file and
+# configure the PostgreSQL datasource on startup.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "grafana-postgres.fullname" . }}-datasources
+  labels:
+    {{- include "grafana-postgres.labels" . | nindent 4 }}
+data:
+  # This is the configuration file for the datasource.
+  datasources.yaml: |-
+    apiVersion: 1
+    datasources:
+      - name: "PostgreSQL-Backend"
+        type: postgres
+        # The URL points to the service created by the PostgreSQL sub-chart.
+        # The format is <release-name>-<chart-name>:<port>
+        url: {{ .Release.Name }}-postgresql:5432
+        user: {{ .Values.postgresql.auth.username }}
+        database: {{ .Values.postgresql.auth.database }}
+        # secureJsonData is used for sensitive information like passwords.
+        secureJsonData:
+          password: {{ .Values.postgresql.auth.password }}
+        jsonData:
+          # Disabling SSL for simplicity in this example.
+          # For production, you should set this to 'require'.
+          sslmode: "disable"
+          # Helps Grafana use the correct SQL syntax.
+          postgresVersion: 1400
+          timescaledb: false

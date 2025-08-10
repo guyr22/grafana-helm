@@ -1,0 +1,21 @@
+# templates/NOTES.txt
+# This file contains notes that will be displayed to the user after a successful installation.
+
+Your Grafana and PostgreSQL chart has been deployed.
+
+1. Get the Grafana URL:
+{{- if .Values.grafana.route.enabled }}
+  URL: http://{{ .Values.grafana.route.host }}
+{{- else }}
+  You can access Grafana by port-forwarding to the service:
+
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "grafana-postgres.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  echo "Visit http://127.0.0.1:3000 to use your application"
+  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 3000:3000
+{{- end }}
+
+2. Login with the following credentials:
+   Username: {{ .Values.grafana.adminUser }}
+   Password: {{ .Values.grafana.adminPassword }}
+
+IMPORTANT: Remember to change the default passwords in your values.yaml file for production deployments.
