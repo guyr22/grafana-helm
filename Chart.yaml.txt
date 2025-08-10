@@ -1,7 +1,7 @@
 # Chart.yaml
-# This file defines the chart's metadata and its dependencies.
-# We are defining PostgreSQL as a dependency, so Helm will automatically
-# fetch and install it when you install this chart.
+# This file defines the chart's metadata.
+# The 'dependencies' section has been removed because we are now
+# embedding the PostgreSQL templates directly.
 
 apiVersion: v2
 name: grafana-postgres
@@ -13,11 +13,3 @@ version: 0.1.0
 
 # This is the version of the application being deployed.
 appVersion: "10.4.2"
-
-# Dependencies section to include the PostgreSQL chart from the Bitnami repository.
-dependencies:
-  - name: postgresql
-    # Using a specific version range for predictability.
-    version: "14.x.x"
-    # The repository where the PostgreSQL chart is located.
-    repository: https://charts.bitnami.com/bitnami

@@ -1,0 +1,21 @@
+# templates/postgresql-service-headless.yaml
+# A headless service is also created to provide stable network DNS entries
+# for the pods in the StatefulSet.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "grafana-postgres.fullname" . }}-postgresql-hl
+  labels:
+    {{- include "grafana-postgres.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgresql
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: tcp-postgresql
+      port: 5432
+      targetPort: tcp-postgresql
+  selector:
+    {{- include "grafana-postgres.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: postgresql

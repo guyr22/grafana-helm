@@ -1,0 +1,56 @@
+# templates/postgresql-statefulset.yaml
+# This template creates the StatefulSet for the PostgreSQL database.
+# A StatefulSet is used to manage stateful applications, providing stable
+# network identifiers and persistent storage.
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "grafana-postgres.fullname" . }}-postgresql
+  labels:
+    {{- include "grafana-postgres.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgresql
+spec:
+  replicas: 1
+  serviceName: {{ include "grafana-postgres.fullname" . }}-postgresql-hl
+  selector:
+    matchLabels:
+      {{- include "grafana-postgres.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: postgresql
+  template:
+    metadata:
+      labels:
+        {{- include "grafana-postgres.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: postgresql
+    spec:
+      containers:
+        - name: postgresql
+          image: "docker.io/bitnami/postgresql:14"
+          imagePullPolicy: IfNotPresent
+          env:
+            # Database credentials are passed as environment variables.
+            # These values come from the 'postgresql' section of your values.yaml
+            - name: POSTGRESQL_USERNAME
+              value: {{ .Values.postgresql.auth.username | quote }}
+            - name: POSTGRESQL_PASSWORD
+              value: {{ .Values.postgresql.auth.password | quote }}
+            - name: POSTGRESQL_DATABASE
+              value: {{ .Values.postgresql.auth.database | quote }}
+          ports:
+            - name: tcp-postgresql
+              containerPort: 5432
+          {{- if .Values.postgresql.primary.persistence.enabled }}
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          {{- end }}
+  {{- if .Values.postgresql.primary.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: "8Gi" # Default size, can be configured in values.yaml
+  {{- end }}
